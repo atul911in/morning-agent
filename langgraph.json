@@ -1,0 +1,23 @@
+{
+  "dependencies": [
+    "."
+  ],
+  "graphs": {
+    "morning_agent": "./graph/supervisor_graph.py:build_supervisor_graph",
+    "traffic_agent": "./agents/traffic_agent.py:build_traffic_agent",
+    "weather_agent": "./agents/weather_agent.py:build_weather_agent",
+    "health_agent": "./agents/health_agent.py:build_health_agent"
+  },
+  "env": ".env",
+  "python_version": "3.11",
+  "store": {
+    "index": {
+      "embed": "openai:text-embedding-3-small",
+      "dims": 1536,
+      "fields": [
+        "traffic_report",
+        "weather_report"
+      ]
+    }
+  }
+}
