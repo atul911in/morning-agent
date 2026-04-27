@@ -42,4 +42,5 @@ jobs:
           LON: '0.151'
           TRAFFIC_RADIUS_MILES: '2'
           TO_EMAIL: ${{ secrets.TO_EMAIL }}
+          ALEXA_NOTIFY_CODE: ${{ secrets.ALEXA_NOTIFY_CODE }}
         run: python main.py
