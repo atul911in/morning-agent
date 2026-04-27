@@ -184,6 +184,43 @@ def send_email_node(state: SupervisorState) -> dict:
         return {"email_sent": False, "error": str(e)}
 
 
+
+def notify_alexa_node(state: SupervisorState) -> dict:
+    code = os.getenv("ALEXA_NOTIFY_CODE", "")
+    if not code:
+        print("ALEXA_NOTIFY_CODE not set, skipping Alexa notification")
+        return {}
+
+    # Build a short spoken summary
+    postcode = state.get("postcode", "DA7 5SN")
+    traffic = state.get("traffic_report", "unavailable")
+    weather = state.get("weather_report", "unavailable")
+
+    # Truncate for Alexa (max ~4000 chars)
+    if len(traffic) > 800:
+        traffic = traffic[:800] + "..."
+    if len(weather) > 400:
+        weather = weather[:400] + "..."
+
+    summary = f"Good morning! Here is your briefing for {postcode}. Traffic: {traffic}. Weather: {weather}."
+
+    print("Sending Alexa notification...")
+    try:
+        import requests
+        r = requests.post(
+            "https://api.notifymyecho.com/v1/NotifyMe",
+            json={"notification": summary, "accessCode": code},
+            timeout=10,
+        )
+        if r.status_code == 202:
+            print("Alexa notification sent successfully")
+        else:
+            print(f"Alexa notification failed: {r.status_code} {r.text[:100]}")
+    except Exception as e:
+        print(f"Alexa notification error: {e}")
+    return {}
+
+
 def build_supervisor_graph() -> StateGraph:
     graph = StateGraph(SupervisorState)
 
@@ -192,6 +229,7 @@ def build_supervisor_graph() -> StateGraph:
     graph.add_node("health_agent", health_node)
     graph.add_node("merge", merge_node)
     graph.add_node("send_email", send_email_node)
+    graph.add_node("notify_alexa", notify_alexa_node)
 
     graph.add_edge(START, "traffic_agent")
     graph.add_edge(START, "weather_agent")
@@ -202,7 +240,8 @@ def build_supervisor_graph() -> StateGraph:
     graph.add_edge("health_agent", "merge")
 
     graph.add_edge("merge", "send_email")
-    graph.add_edge("send_email", END)
+    graph.add_edge("send_email", "notify_alexa")
+    graph.add_edge("notify_alexa", END)
 
     return graph.compile()
 
