@@ -1,6 +1,6 @@
 """
 tools/shared_tools.py
-─────────────────────
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 LangChain tools used by the Traffic and Weather agents.
 All tools are decorated with @tool so LangGraph agents can bind them.
 """
@@ -16,9 +16,9 @@ except Exception:
 from langchain_core.tools import tool
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # TRAFFIC TOOLS
-# ─────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @tool
 def get_tfl_road_disruptions(roads: str = "A2,A207,A220,A221,A222") -> dict:
@@ -84,9 +84,9 @@ def get_highways_england_incidents(road: str = "A2") -> dict:
         return {"road": road, "incidents": [], "error": str(e)}
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # WEATHER TOOLS
-# ─────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 WMO_CODES = {
     0: "Clear sky", 1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast",
@@ -105,7 +105,7 @@ WIND_DIRS = ["N","NNE","NE","ENE","E","ESE","SE","SSE",
 def get_current_weather(lat: float = 51.461, lon: float = 0.151) -> dict:
     """
     Fetch current weather conditions from Open-Meteo (free, no API key).
-    Returns temperature (°C), feels-like (°C), wind speed (mph),
+    Returns temperature (Â°C), feels-like (Â°C), wind speed (mph),
     wind direction, weather condition, humidity, and daily high/low/rain.
     Default coordinates are for DA7 5SN, Bexleyheath, London.
     """
@@ -161,7 +161,7 @@ def get_met_office_warnings(location: str = "Bexley") -> dict:
         return {
             "has_warnings": False,
             "warnings": [],
-            "note": "No MET_OFFICE_API_KEY set — warning check skipped. "
+            "note": "No MET_OFFICE_API_KEY set â€” warning check skipped. "
                     "Get a free key at https://datahub.metoffice.gov.uk",
         }
     try:
@@ -177,9 +177,9 @@ def get_met_office_warnings(location: str = "Bexley") -> dict:
         return {"has_warnings": False, "warnings": [], "error": str(e)}
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # SMARTTHINGS TOOLS (Galaxy Watch / Wearable)
-# ─────────────────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 SMARTTHINGS_BASE = "https://api.smartthings.com/v1"
 
@@ -296,5 +296,154 @@ def get_smartthings_device_history(device_id: str) -> dict:
                 "component": e.get("componentId", "main"),
             })
         return {"ok": True, "events": events, "count": len(events)}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# TFL TUBE / ELIZABETH LINE STATUS TOOLS
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+@tool
+def get_tube_status(line_id: str = "elizabeth") -> dict:
+    """
+    Get the current status of a TfL line (tube, Elizabeth line, DLR, Overground).
+    Common line IDs: elizabeth, jubilee, central, northern, district, victoria,
+    bakerloo, circle, hammersmith-city, metropolitan, piccadilly, dlr, overground.
+    Returns current status severity and description.
+    No API key required for basic status.
+    """
+    try:
+        url = f"https://api.tfl.gov.uk/Line/{line_id}/Status"
+        api_key = os.getenv("TFL_API_KEY", "")
+        params = {"app_key": api_key} if api_key else {}
+        r = requests.get(url, params=params, timeout=10)
+        r.raise_for_status()
+        data = r.json()
+        if not data:
+            return {"ok": False, "error": f"No data for line {line_id}"}
+        line = data[0]
+        statuses = []
+        for s in line.get("lineStatuses", []):
+            statuses.append({
+                "severity": s.get("statusSeverityDescription", "Unknown"),
+                "reason": s.get("reason", ""),
+                "disruption_category": s.get("disruption", {}).get("category", "") if s.get("disruption") else "",
+            })
+        return {
+            "ok": True,
+            "line_id": line_id,
+            "line_name": line.get("name", line_id),
+            "statuses": statuses,
+        }
+    except Exception as e:
+        return {"ok": False, "line_id": line_id, "error": str(e)}
+
+
+@tool
+def get_all_tube_status() -> dict:
+    """
+    Get the current status of ALL London Underground lines, Elizabeth line,
+    DLR, and London Overground. Returns a summary of each line's status.
+    Useful for a complete morning briefing of London transport.
+    """
+    try:
+        url = "https://api.tfl.gov.uk/Line/Mode/tube,elizabeth-line,dlr,overground/Status"
+        api_key = os.getenv("TFL_API_KEY", "")
+        params = {"app_key": api_key} if api_key else {}
+        r = requests.get(url, params=params, timeout=15)
+        r.raise_for_status()
+        lines = []
+        for line in r.json():
+            status_list = line.get("lineStatuses", [])
+            primary = status_list[0] if status_list else {}
+            severity = primary.get("statusSeverityDescription", "Unknown")
+            reason = primary.get("reason", "")
+            lines.append({
+                "line_name": line.get("name", "?"),
+                "line_id": line.get("id", ""),
+                "status": severity,
+                "reason": reason[:200] if reason else "",
+            })
+        disrupted = [l for l in lines if l["status"] != "Good Service"]
+        return {
+            "ok": True,
+            "total_lines": len(lines),
+            "disrupted_count": len(disrupted),
+            "lines": lines,
+        }
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+@tool
+def get_line_disruptions_forecast(line_id: str = "elizabeth") -> dict:
+    """
+    Get planned disruptions and future alerts for a TfL line.
+    Shows upcoming engineering works, planned closures, and service changes.
+    Useful for checking if there are any planned disruptions today or this week.
+    """
+    try:
+        url = f"https://api.tfl.gov.uk/Line/{line_id}/Disruption"
+        api_key = os.getenv("TFL_API_KEY", "")
+        params = {"app_key": api_key} if api_key else {}
+        r = requests.get(url, params=params, timeout=10)
+        r.raise_for_status()
+        disruptions = []
+        for d in r.json():
+            disruptions.append({
+                "category": d.get("category", ""),
+                "description": d.get("description", "")[:300],
+                "affected_routes": [ar.get("name", "") for ar in d.get("affectedRoutes", [])[:3]],
+                "closure_text": d.get("closureText", ""),
+            })
+        return {
+            "ok": True,
+            "line_id": line_id,
+            "disruption_count": len(disruptions),
+            "disruptions": disruptions,
+        }
+    except Exception as e:
+        return {"ok": False, "line_id": line_id, "error": str(e)}
+
+
+@tool
+def plan_tfl_journey(from_location: str = "DA7 5SN", to_location: str = "Canary Wharf") -> dict:
+    """
+    Plan a journey using TfL Journey Planner. Accepts postcodes, station names,
+    or place names. Returns recommended routes with duration and line info.
+    Default origin is DA7 5SN (Bexleyheath).
+    """
+    try:
+        url = f"https://api.tfl.gov.uk/Journey/JourneyResults/{from_location}/to/{to_location}"
+        api_key = os.getenv("TFL_API_KEY", "")
+        params = {"app_key": api_key} if api_key else {}
+        r = requests.get(url, params=params, timeout=15)
+        r.raise_for_status()
+        data = r.json()
+        journeys = []
+        for j in data.get("journeys", [])[:3]:
+            legs_info = []
+            for leg in j.get("legs", []):
+                legs_info.append({
+                    "mode": leg.get("mode", {}).get("name", ""),
+                    "line": leg.get("routeOptions", [{}])[0].get("name", "") if leg.get("routeOptions") else "",
+                    "from": leg.get("departurePoint", {}).get("commonName", ""),
+                    "to": leg.get("arrivalPoint", {}).get("commonName", ""),
+                    "duration_min": leg.get("duration", 0),
+                })
+            journeys.append({
+                "duration_min": j.get("duration", 0),
+                "departure": j.get("startDateTime", ""),
+                "arrival": j.get("arrivalDateTime", ""),
+                "legs": legs_info,
+            })
+        return {
+            "ok": True,
+            "from": from_location,
+            "to": to_location,
+            "journey_count": len(journeys),
+            "journeys": journeys,
+        }
     except Exception as e:
         return {"ok": False, "error": str(e)}

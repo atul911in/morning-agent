@@ -2,10 +2,10 @@
 agents/traffic_agent.py
 ───────────────────────
 Independent LangGraph ReAct agent responsible for:
-  • Checking live traffic conditions on A2, A207, A220, A221, A222
-    within ~2 miles of DA7 5SN, Bexleyheath
-  • Summarising incidents, roadworks and alerts
-  • Returning a structured TrafficReport to the supervisor graph
+  - Checking live road traffic on A2, A207, A220, A221, A222
+  - Checking Elizabeth line status and disruptions
+  - Checking ALL tube line statuses
+  - Reporting incidents, delays, and alerts from DA7 5SN area
 
 Traced automatically via LangSmith when LANGCHAIN_TRACING_V2=true.
 """
@@ -22,33 +22,34 @@ from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, END
 from langgraph.prebuilt import ToolNode, tools_condition
 
-from tools.shared_tools import get_tfl_road_disruptions, get_highways_england_incidents
+from tools.shared_tools import (
+    get_tfl_road_disruptions,
+    get_highways_england_incidents,
+    get_tube_status,
+    get_all_tube_status,
+    get_line_disruptions_forecast,
+    plan_tfl_journey,
+)
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# State
-# ─────────────────────────────────────────────────────────────────────────────
 
 class TrafficAgentState(TypedDict):
     messages: Annotated[list[BaseMessage], operator.add]
-    traffic_report: str        # final human-readable summary
-    incident_count: int        # number of active incidents found
-    raw_incidents: list[str]   # raw incident strings
+    traffic_report: str
+    incident_count: int
+    raw_incidents: list[str]
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Tools available to this agent
-# ─────────────────────────────────────────────────────────────────────────────
+TRAFFIC_TOOLS = [
+    get_tfl_road_disruptions,
+    get_highways_england_incidents,
+    get_tube_status,
+    get_all_tube_status,
+    get_line_disruptions_forecast,
+    plan_tfl_journey,
+]
 
-TRAFFIC_TOOLS = [get_tfl_road_disruptions, get_highways_england_incidents]
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# LLM
-# ─────────────────────────────────────────────────────────────────────────────
 
 def _get_llm():
-    """Return bound LLM. Supports OpenAI (default) or Anthropic via env var."""
     if os.getenv("ANTHROPIC_API_KEY"):
         from langchain_anthropic import ChatAnthropic
         llm = ChatAnthropic(model="claude-3-5-haiku-20241022", temperature=0)
@@ -57,24 +58,38 @@ def _get_llm():
     return llm.bind_tools(TRAFFIC_TOOLS)
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Agent nodes
-# ─────────────────────────────────────────────────────────────────────────────
+SYSTEM_PROMPT = """You are the Traffic & Transport Agent for DA7 5SN, Bexleyheath, London.
 
-SYSTEM_PROMPT = """You are the Traffic Checker Agent for DA7 5SN, Bexleyheath, London.
+Your job is to produce a comprehensive morning transport briefing. Do ALL of the following:
 
-Your job:
-1. Use get_tfl_road_disruptions to check A2, A207, A220, A221, A222 for live incidents.
-2. Use get_highways_england_incidents specifically on the A2 (it runs closest to DA7 5SN).
-3. Analyse the results and produce a concise traffic report.
+1. ELIZABETH LINE (priority - nearest line to DA7 5SN):
+   - Call get_tube_status with line_id="elizabeth" for current status
+   - Call get_line_disruptions_forecast with line_id="elizabeth" for planned disruptions/alerts
 
-Report format (plain text, under 200 words):
+2. ALL TUBE LINES:
+   - Call get_all_tube_status to get status of every tube line, Elizabeth line, DLR, and Overground
+   - Highlight any lines with disruptions
+
+3. ROAD TRAFFIC:
+   - Call get_tfl_road_disruptions for A2, A207, A220, A221, A222
+   - Call get_highways_england_incidents for the A2
+
+Report format (plain text, under 300 words):
+
+ELIZABETH LINE
+- Current status (Good Service / Minor Delays / etc.)
+- Any disruptions or planned works today
+
+TUBE & RAIL OVERVIEW
+- Lines with Good Service (list briefly)
+- Lines with issues (detail each: line name, status, reason)
+
+ROAD TRAFFIC (2-mile radius of DA7 5SN)
 - Overall status (Clear / Minor delays / Significant disruption)
-- List each incident with road name, type, and impact
-- Note any roadworks with expected duration if available
-- If all clear, explicitly say so
+- List each incident with road name and impact
+- If all clear, say so
 
-Be factual and concise. Do not fabricate incidents.
+Be factual and concise. Do not fabricate information.
 """
 
 
@@ -90,11 +105,9 @@ def agent_node(state: TrafficAgentState) -> dict:
 
 
 def summarise_node(state: TrafficAgentState) -> dict:
-    """Extract the final text summary from the last AI message."""
     last = state["messages"][-1]
     content = last.content if hasattr(last, "content") else str(last)
 
-    # Pull raw incidents if available from tool results
     raw = []
     for msg in state["messages"]:
         if hasattr(msg, "content") and isinstance(msg.content, list):
@@ -107,21 +120,17 @@ def summarise_node(state: TrafficAgentState) -> dict:
     return {
         "traffic_report": content,
         "incident_count": len(raw),
-        "raw_incidents":  raw,
+        "raw_incidents": raw,
     }
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Build graph
-# ─────────────────────────────────────────────────────────────────────────────
 
 def build_traffic_agent() -> StateGraph:
     tool_node = ToolNode(TRAFFIC_TOOLS)
 
     graph = StateGraph(TrafficAgentState)
 
-    graph.add_node("agent",     agent_node)
-    graph.add_node("tools",     tool_node)
+    graph.add_node("agent", agent_node)
+    graph.add_node("tools", tool_node)
     graph.add_node("summarise", summarise_node)
 
     graph.set_entry_point("agent")
@@ -131,32 +140,29 @@ def build_traffic_agent() -> StateGraph:
         tools_condition,
         {"tools": "tools", END: "summarise"},
     )
-    graph.add_edge("tools",     "agent")
+    graph.add_edge("tools", "agent")
     graph.add_edge("summarise", END)
 
     return graph.compile()
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Convenience runner
-# ─────────────────────────────────────────────────────────────────────────────
-
 def run_traffic_agent() -> dict:
-    """Run the traffic agent and return the final state."""
     app = build_traffic_agent()
     initial_state: TrafficAgentState = {
         "messages": [
             HumanMessage(
                 content=(
-                    "Check live traffic conditions within 2 miles of DA7 5SN, "
-                    "Bexleyheath, London. Check roads A2, A207, A220, A221, A222. "
-                    "Report all incidents, roadworks and alerts. If all clear, say so."
+                    "Produce a complete morning transport briefing for DA7 5SN, Bexleyheath, London. "
+                    "Check: 1) Elizabeth line current status and any planned disruptions, "
+                    "2) ALL tube line statuses to find any disruptions across the network, "
+                    "3) Road traffic on A2, A207, A220, A221, A222 within 2 miles. "
+                    "Report everything clearly."
                 )
             )
         ],
         "traffic_report": "",
         "incident_count": 0,
-        "raw_incidents":  [],
+        "raw_incidents": [],
     }
     result = app.invoke(initial_state)
     return result
@@ -166,5 +172,5 @@ if __name__ == "__main__":
     from dotenv import load_dotenv
     load_dotenv()
     result = run_traffic_agent()
-    print("\n=== TRAFFIC REPORT ===")
+    print("\n=== TRAFFIC & TRANSPORT REPORT ===")
     print(result["traffic_report"])
