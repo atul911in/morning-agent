@@ -1,0 +1,45 @@
+name: Morning Agent - Daily Briefing
+
+on:
+  schedule:
+    # Run at 7:00 AM UK time (BST=UTC+1, so 6:00 UTC)
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    # Allow manual trigger from GitHub Actions tab
+
+jobs:
+  morning-briefing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Morning Agent
+        env:
+          LANGCHAIN_API_KEY: ${{ secrets.LANGCHAIN_API_KEY }}
+          LANGCHAIN_TRACING_V2: 'true'
+          LANGCHAIN_PROJECT: morning-agent-da75sn
+          LANGCHAIN_ENDPOINT: https://api.smith.langchain.com
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          SMARTTHINGS_TOKEN: ${{ secrets.SMARTTHINGS_TOKEN }}
+          POSTCODE: DA75SN
+          DISPLAY_POSTCODE: 'DA7 5SN'
+          LOCATION: 'Bexleyheath, London'
+          LAT: '51.461'
+          LON: '0.151'
+          TRAFFIC_RADIUS_MILES: '2'
+          TO_EMAIL: ${{ secrets.TO_EMAIL }}
+        run: python main.py
