@@ -191,18 +191,36 @@ def notify_alexa_node(state: SupervisorState) -> dict:
         print("ALEXA_NOTIFY_CODE not set, skipping Alexa notification")
         return {}
 
-    # Build a short spoken summary
     postcode = state.get("postcode", "DA7 5SN")
     traffic = state.get("traffic_report", "unavailable")
     weather = state.get("weather_report", "unavailable")
 
-    # Truncate for Alexa (max ~4000 chars)
-    if len(traffic) > 800:
-        traffic = traffic[:800] + "..."
+    # Extract only disrupted lines from traffic report
+    # Look for keywords that indicate issues
+    disruption_keywords = [
+        "minor delay", "severe delay", "part closure", "planned closure",
+        "suspended", "part suspended", "reduced service", "bus service",
+        "special service", "disruption", "closure", "delay", "incident",
+    ]
+    traffic_lines = traffic.split("\n")
+    disrupted_lines = []
+    for line in traffic_lines:
+        lower = line.lower().strip()
+        if any(kw in lower for kw in disruption_keywords):
+            disrupted_lines.append(line.strip())
+
+    if disrupted_lines:
+        traffic_summary = "Transport alerts: " + ". ".join(disrupted_lines[:10])
+    else:
+        traffic_summary = "All tube lines and roads are running a good service"
+
+    if len(traffic_summary) > 1000:
+        traffic_summary = traffic_summary[:1000] + "..."
+
     if len(weather) > 400:
         weather = weather[:400] + "..."
 
-    summary = f"Good morning! Here is your briefing for {postcode}. Traffic: {traffic}. Weather: {weather}."
+    summary = f"Good morning! Here is your briefing for {postcode}. {traffic_summary}. Weather: {weather}."
 
     print("Sending Alexa notification...")
     try:
@@ -219,7 +237,6 @@ def notify_alexa_node(state: SupervisorState) -> dict:
     except Exception as e:
         print(f"Alexa notification error: {e}")
     return {}
-
 
 def build_supervisor_graph() -> StateGraph:
     graph = StateGraph(SupervisorState)
