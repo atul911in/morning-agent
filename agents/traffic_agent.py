@@ -143,7 +143,7 @@ def build_traffic_agent() -> StateGraph:
     graph.add_edge("tools", "agent")
     graph.add_edge("summarise", END)
 
-    return graph.compile(recursion_limit=50)
+    return graph.compile()
 
 
 def run_traffic_agent() -> dict:
@@ -164,7 +164,7 @@ def run_traffic_agent() -> dict:
         "incident_count": 0,
         "raw_incidents": [],
     }
-    result = app.invoke(initial_state)
+    result = app.invoke(initial_state, {"recursion_limit": 50})
     return result
 
 
