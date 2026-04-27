@@ -143,7 +143,7 @@ def build_traffic_agent() -> StateGraph:
     graph.add_edge("tools", "agent")
     graph.add_edge("summarise", END)
 
-    return graph.compile()
+    return graph.compile(recursion_limit=50)
 
 
 def run_traffic_agent() -> dict:
