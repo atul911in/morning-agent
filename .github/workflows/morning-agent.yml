@@ -2,10 +2,11 @@ name: Morning Agent - Daily Briefing
 
 on:
   schedule:
-    # Run at 7:00 AM UK time (BST=UTC+1, so 6:00 UTC)
+    # 6:00 UTC = 7:00 AM BST (summer)
     - cron: '0 6 * * *'
+    # 7:00 UTC = 7:00 AM GMT (winter)
+    - cron: '0 7 * * *'
   workflow_dispatch:
-    # Allow manual trigger from GitHub Actions tab
 
 jobs:
   morning-briefing:
@@ -13,19 +14,35 @@ jobs:
     timeout-minutes: 10
 
     steps:
+      - name: Check if 7am UK time
+        id: timecheck
+        run: |
+          UK_HOUR=$(TZ='Europe/London' date +%H)
+          echo "UK hour is: $UK_HOUR"
+          if [ "$UK_HOUR" = "07" ]; then
+            echo "run=true" >> $GITHUB_OUTPUT
+          else
+            echo "run=false" >> $GITHUB_OUTPUT
+            echo "Skipping - not 7am UK time"
+          fi
+
       - name: Checkout code
+        if: steps.timecheck.outputs.run == 'true' || github.event_name == 'workflow_dispatch'
         uses: actions/checkout@v4
 
       - name: Set up Python
+        if: steps.timecheck.outputs.run == 'true' || github.event_name == 'workflow_dispatch'
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
 
       - name: Install dependencies
+        if: steps.timecheck.outputs.run == 'true' || github.event_name == 'workflow_dispatch'
         run: pip install -r requirements.txt
 
       - name: Run Morning Agent
+        if: steps.timecheck.outputs.run == 'true' || github.event_name == 'workflow_dispatch'
         env:
           LANGCHAIN_API_KEY: ${{ secrets.LANGCHAIN_API_KEY }}
           LANGCHAIN_TRACING_V2: 'true'
