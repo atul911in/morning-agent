@@ -19,11 +19,11 @@ jobs:
         run: |
           UK_HOUR=$(TZ='Europe/London' date +%H)
           echo "UK hour is: $UK_HOUR"
-          if [ "$UK_HOUR" = "07" ]; then
+          if [ "$UK_HOUR" = "06" ] || [ "$UK_HOUR" = "07" ] || [ "$UK_HOUR" = "08" ]; then
             echo "run=true" >> $GITHUB_OUTPUT
           else
             echo "run=false" >> $GITHUB_OUTPUT
-            echo "Skipping - not 7am UK time"
+            echo "Skipping - not around 7am UK time (got $UK_HOUR)"
           fi
 
       - name: Checkout code
