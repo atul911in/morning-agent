@@ -30,6 +30,7 @@ from tools.shared_tools import (
     get_line_disruptions_forecast,
     plan_tfl_journey,
 )
+from config import POSTCODE, DISPLAY_POSTCODE, LOCATION, ROADS, NEAREST_TUBE_LINE, TRAFFIC_RADIUS_MILES
 
 
 class TrafficAgentState(TypedDict):
@@ -58,25 +59,25 @@ def _get_llm():
     return llm.bind_tools(TRAFFIC_TOOLS)
 
 
-SYSTEM_PROMPT = """You are the Traffic & Transport Agent for DA7 5SN, Bexleyheath, London.
+SYSTEM_PROMPT = f"""You are the Traffic & Transport Agent for {DISPLAY_POSTCODE}, {LOCATION}.
 
 Your job is to produce a comprehensive morning transport briefing. Do ALL of the following:
 
-1. ELIZABETH LINE (priority - nearest line to DA7 5SN):
-   - Call get_tube_status with line_id="elizabeth" for current status
-   - Call get_line_disruptions_forecast with line_id="elizabeth" for planned disruptions/alerts
+1. {NEAREST_TUBE_LINE.upper()} LINE (priority - nearest line to {DISPLAY_POSTCODE}):
+   - Call get_tube_status with line_id="{NEAREST_TUBE_LINE}" for current status
+   - Call get_line_disruptions_forecast with line_id="{NEAREST_TUBE_LINE}" for planned disruptions/alerts
 
 2. ALL TUBE LINES:
    - Call get_all_tube_status to get status of every tube line, Elizabeth line, DLR, and Overground
    - Highlight any lines with disruptions
 
 3. ROAD TRAFFIC:
-   - Call get_tfl_road_disruptions for A2, A207, A220, A221, A222
+   - Call get_tfl_road_disruptions for {ROADS}
    - Call get_highways_england_incidents for the A2
 
 Report format (plain text, under 300 words):
 
-ELIZABETH LINE
+{NEAREST_TUBE_LINE.upper()} LINE
 - Current status (Good Service / Minor Delays / etc.)
 - Any disruptions or planned works today
 
@@ -84,7 +85,7 @@ TUBE & RAIL OVERVIEW
 - Lines with Good Service (list briefly)
 - Lines with issues (detail each: line name, status, reason)
 
-ROAD TRAFFIC (2-mile radius of DA7 5SN)
+ROAD TRAFFIC ({TRAFFIC_RADIUS_MILES}-mile radius of {DISPLAY_POSTCODE})
 - Overall status (Clear / Minor delays / Significant disruption)
 - List each incident with road name and impact
 - If all clear, say so
@@ -152,10 +153,10 @@ def run_traffic_agent() -> dict:
         "messages": [
             HumanMessage(
                 content=(
-                    "Produce a complete morning transport briefing for DA7 5SN, Bexleyheath, London. "
-                    "Check: 1) Elizabeth line current status and any planned disruptions, "
-                    "2) ALL tube line statuses to find any disruptions across the network, "
-                    "3) Road traffic on A2, A207, A220, A221, A222 within 2 miles. "
+                    f"Produce a complete morning transport briefing for {DISPLAY_POSTCODE}, {LOCATION}. "
+                    f"Check: 1) {NEAREST_TUBE_LINE.title()} line current status and any planned disruptions, "
+                    f"2) ALL tube line statuses to find any disruptions across the network, "
+                    f"3) Road traffic on {ROADS} within {TRAFFIC_RADIUS_MILES} miles. "
                     "Report everything clearly."
                 )
             )

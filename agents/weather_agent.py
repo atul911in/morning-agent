@@ -22,6 +22,7 @@ from langgraph.graph import StateGraph, END
 from langgraph.prebuilt import ToolNode, tools_condition
 
 from tools.shared_tools import get_current_weather, get_met_office_warnings
+from config import LAT, LON, DISPLAY_POSTCODE, LOCATION
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -63,10 +64,10 @@ def _get_llm():
 # Agent nodes
 # ─────────────────────────────────────────────────────────────────────────────
 
-SYSTEM_PROMPT = """You are the Weather Checker Agent for DA7 5SN, Bexleyheath, London.
+SYSTEM_PROMPT = f"""You are the Weather Checker Agent for {DISPLAY_POSTCODE}, {LOCATION}.
 
 Your job:
-1. Call get_current_weather with lat=51.461, lon=0.151 (DA7 5SN coordinates).
+1. Call get_current_weather with lat={LAT}, lon={LON} ({DISPLAY_POSTCODE} coordinates).
 2. Call get_met_office_warnings to check for any active weather alerts.
 3. Produce a clear weather report.
 
@@ -177,8 +178,8 @@ def run_weather_agent() -> dict:
         "messages": [
             HumanMessage(
                 content=(
-                    "Fetch the current weather for DA7 5SN, Bexleyheath, London "
-                    "(lat=51.461, lon=0.151). Include temperature, feels-like, "
+                    f"Fetch the current weather for {DISPLAY_POSTCODE}, {LOCATION} "
+                    f"(lat={LAT}, lon={LON}). Include temperature, feels-like, "
                     "wind speed and direction, humidity, today's high/low, "
                     "expected rain, and any Met Office warnings."
                 )

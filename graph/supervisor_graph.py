@@ -19,6 +19,7 @@ from langgraph.graph import StateGraph, START, END
 from agents.traffic_agent import run_traffic_agent
 from agents.weather_agent import run_weather_agent
 from agents.health_agent import run_health_agent
+from config import DISPLAY_POSTCODE, LOCATION, TO_EMAIL, GMAIL_ADDRESS, GMAIL_APP_PASSWORD, ALEXA_NOTIFY_CODE
 
 load_dotenv()
 
@@ -152,8 +153,8 @@ def merge_node(state: SupervisorState) -> dict:
 
 
 def send_email_node(state: SupervisorState) -> dict:
-    gmail_addr = os.getenv("GMAIL_ADDRESS", "")
-    app_password = os.getenv("GMAIL_APP_PASSWORD", "")
+    gmail_addr = GMAIL_ADDRESS
+    app_password = GMAIL_APP_PASSWORD
     to_email = state.get("to_email", os.getenv("TO_EMAIL", ""))
     subject = state.get("email_subject", "Morning briefing")
     html_body = state.get("html_body", "")
@@ -186,7 +187,7 @@ def send_email_node(state: SupervisorState) -> dict:
 
 
 def notify_alexa_node(state: SupervisorState) -> dict:
-    code = os.getenv("ALEXA_NOTIFY_CODE", "")
+    code = ALEXA_NOTIFY_CODE
     if not code:
         print("ALEXA_NOTIFY_CODE not set, skipping Alexa notification")
         return {}
@@ -272,9 +273,9 @@ def run_morning_agent():
     graph = build_supervisor_graph()
 
     initial_state: SupervisorState = {
-        "location": "Bexleyheath, London",
-        "postcode": os.getenv("DISPLAY_POSTCODE", "DA7 5SN"),
-        "to_email": os.getenv("TO_EMAIL", ""),
+        "location": LOCATION,
+        "postcode": DISPLAY_POSTCODE,
+        "to_email": TO_EMAIL,
         "traffic_report": "",
         "traffic_count": 0,
         "weather_report": "",
